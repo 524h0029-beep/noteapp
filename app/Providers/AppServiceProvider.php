@@ -19,20 +19,16 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-   public function boot(): void
-{
-    ResetPassword::createUrlUsing(function ($user, string $token) {
-        return 'http://localhost:8000/reset-password?token=' . $token . '&email=' . urlencode($user->email);
-    });
-}
+    public function boot(): void
+    {
+        // Force HTTPS on Railway
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
 
-
-
-public function boots(): void
-{
-    if (app()->environment('production')) {
-        URL::forceScheme('https');
+        // Reset password URL
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            return 'https://noteapp-production-2bd5.up.railway.app/reset-password?token=' . $token . '&email=' . urlencode($user->email);
+        });
     }
-}
-    
 }
