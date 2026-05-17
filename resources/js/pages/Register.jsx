@@ -3,34 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
 
-// ── Field phải nằm NGOÀI Register để không bị tạo lại mỗi lần re-render ──
-const Field = ({ label, icon: Icon, type = 'text', field, placeholder, showToggle, showPass, onToggle, value, onChange }) => (
-    <div>
-        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
-        <div className="relative">
-            <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-                type={showToggle ? (showPass ? 'text' : 'password') : type}
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white transition"
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                required
-            />
-            {showToggle && (
-                <button type="button" onClick={onToggle}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
-                    {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-            )}
-        </div>
-    </div>
-);
-
 export default function Register() {
     const { register } = useAuth();
     const navigate = useNavigate();
-    const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '' });
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
@@ -38,12 +17,12 @@ export default function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true); setError('');
-        if (form.password !== form.password_confirmation) {
+        if (password !== passwordConfirm) {
             setError('Mật khẩu xác nhận không khớp');
             setLoading(false); return;
         }
         try {
-            await register(form.name, form.email, form.password, form.password_confirmation);
+            await register(name, email, password, passwordConfirm);
             navigate('/');
         } catch (err) {
             setError(err.response?.data?.message || 'Đăng ký thất bại');
@@ -87,31 +66,65 @@ export default function Register() {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <Field
-                            label="Tên hiển thị" icon={User} field="name"
-                            placeholder="Nguyễn Văn A"
-                            value={form.name}
-                            onChange={e => setForm({ ...form, name: e.target.value })}
-                        />
-                        <Field
-                            label="Email" icon={Mail} type="email" field="email"
-                            placeholder="email@example.com"
-                            value={form.email}
-                            onChange={e => setForm({ ...form, email: e.target.value })}
-                        />
-                        <Field
-                            label="Mật khẩu" icon={Lock} field="password"
-                            placeholder="Tối thiểu 8 ký tự"
-                            showToggle showPass={showPass} onToggle={() => setShowPass(!showPass)}
-                            value={form.password}
-                            onChange={e => setForm({ ...form, password: e.target.value })}
-                        />
-                        <Field
-                            label="Xác nhận mật khẩu" icon={Lock} field="password_confirmation"
-                            placeholder="Nhập lại mật khẩu"
-                            value={form.password_confirmation}
-                            onChange={e => setForm({ ...form, password_confirmation: e.target.value })}
-                        />
+                        {/* Tên hiển thị */}
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Tên hiển thị</label>
+                            <div className="relative">
+                                <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input type="text"
+                                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white transition"
+                                    placeholder="Nguyễn Văn A"
+                                    value={name}
+                                    onChange={e => setName(e.target.value)}
+                                    required />
+                            </div>
+                        </div>
+
+                        {/* Email */}
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Email</label>
+                            <div className="relative">
+                                <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input type="email"
+                                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white transition"
+                                    placeholder="email@example.com"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    required />
+                            </div>
+                        </div>
+
+                        {/* Mật khẩu */}
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Mật khẩu</label>
+                            <div className="relative">
+                                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input type={showPass ? 'text' : 'password'}
+                                    className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white transition"
+                                    placeholder="Tối thiểu 8 ký tự"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required />
+                                <button type="button" onClick={() => setShowPass(!showPass)}
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                                    {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Xác nhận mật khẩu */}
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Xác nhận mật khẩu</label>
+                            <div className="relative">
+                                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input type="password"
+                                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white transition"
+                                    placeholder="Nhập lại mật khẩu"
+                                    value={passwordConfirm}
+                                    onChange={e => setPasswordConfirm(e.target.value)}
+                                    required />
+                            </div>
+                        </div>
 
                         <button type="submit" disabled={loading}
                             className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white py-3 rounded-xl font-semibold text-sm transition shadow-sm disabled:opacity-60 mt-2">
