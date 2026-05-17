@@ -3,10 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
 
-// ── FIX: chuyển Field ra ngoài Register() để tránh bị tạo lại mỗi lần render ──
-// Nếu để bên trong, mỗi lần gõ 1 ký tự → setForm → Register re-render → Field
-// là component mới hoàn toàn → React unmount + mount lại input → mất focus.
-const Field = ({ label, icon: Icon, type = 'text', field, placeholder, showToggle, value, onChange, showPass, onTogglePass }) => (
+// ── Field phải nằm NGOÀI Register để không bị tạo lại mỗi lần re-render ──
+const Field = ({ label, icon: Icon, type = 'text', field, placeholder, showToggle, showPass, onToggle, value, onChange }) => (
     <div>
         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
         <div className="relative">
@@ -20,7 +18,7 @@ const Field = ({ label, icon: Icon, type = 'text', field, placeholder, showToggl
                 required
             />
             {showToggle && (
-                <button type="button" onClick={onTogglePass}
+                <button type="button" onClick={onToggle}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
                     {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
@@ -104,7 +102,7 @@ export default function Register() {
                         <Field
                             label="Mật khẩu" icon={Lock} field="password"
                             placeholder="Tối thiểu 8 ký tự"
-                            showToggle showPass={showPass} onTogglePass={() => setShowPass(!showPass)}
+                            showToggle showPass={showPass} onToggle={() => setShowPass(!showPass)}
                             value={form.password}
                             onChange={e => setForm({ ...form, password: e.target.value })}
                         />
