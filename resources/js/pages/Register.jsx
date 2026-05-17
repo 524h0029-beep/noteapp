@@ -3,6 +3,32 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
 
+// ── FIX: chuyển Field ra ngoài Register() để tránh bị tạo lại mỗi lần render ──
+// Nếu để bên trong, mỗi lần gõ 1 ký tự → setForm → Register re-render → Field
+// là component mới hoàn toàn → React unmount + mount lại input → mất focus.
+const Field = ({ label, icon: Icon, type = 'text', field, placeholder, showToggle, value, onChange, showPass, onTogglePass }) => (
+    <div>
+        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
+        <div className="relative">
+            <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+                type={showToggle ? (showPass ? 'text' : 'password') : type}
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white transition"
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                required
+            />
+            {showToggle && (
+                <button type="button" onClick={onTogglePass}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                    {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+            )}
+        </div>
+    </div>
+);
+
 export default function Register() {
     const { register } = useAuth();
     const navigate = useNavigate();
@@ -25,25 +51,6 @@ export default function Register() {
             setError(err.response?.data?.message || 'Đăng ký thất bại');
         } finally { setLoading(false); }
     };
-
-    const Field = ({ label, icon: Icon, type = 'text', field, placeholder, showToggle }) => (
-        <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
-            <div className="relative">
-                <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type={showToggle ? (showPass ? 'text' : 'password') : type}
-                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white transition"
-                    placeholder={placeholder}
-                    value={form[field]} onChange={e => setForm({ ...form, [field]: e.target.value })} required />
-                {showToggle && (
-                    <button type="button" onClick={() => setShowPass(!showPass)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
-                        {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
-                )}
-            </div>
-        </div>
-    );
 
     return (
         <div className="min-h-screen flex bg-slate-50">
@@ -82,10 +89,31 @@ export default function Register() {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <Field label="Tên hiển thị" icon={User} field="name" placeholder="Nguyễn Văn A" />
-                        <Field label="Email" icon={Mail} type="email" field="email" placeholder="email@example.com" />
-                        <Field label="Mật khẩu" icon={Lock} field="password" placeholder="Tối thiểu 8 ký tự" showToggle />
-                        <Field label="Xác nhận mật khẩu" icon={Lock} field="password_confirmation" placeholder="Nhập lại mật khẩu" />
+                        <Field
+                            label="Tên hiển thị" icon={User} field="name"
+                            placeholder="Nguyễn Văn A"
+                            value={form.name}
+                            onChange={e => setForm({ ...form, name: e.target.value })}
+                        />
+                        <Field
+                            label="Email" icon={Mail} type="email" field="email"
+                            placeholder="email@example.com"
+                            value={form.email}
+                            onChange={e => setForm({ ...form, email: e.target.value })}
+                        />
+                        <Field
+                            label="Mật khẩu" icon={Lock} field="password"
+                            placeholder="Tối thiểu 8 ký tự"
+                            showToggle showPass={showPass} onTogglePass={() => setShowPass(!showPass)}
+                            value={form.password}
+                            onChange={e => setForm({ ...form, password: e.target.value })}
+                        />
+                        <Field
+                            label="Xác nhận mật khẩu" icon={Lock} field="password_confirmation"
+                            placeholder="Nhập lại mật khẩu"
+                            value={form.password_confirmation}
+                            onChange={e => setForm({ ...form, password_confirmation: e.target.value })}
+                        />
 
                         <button type="submit" disabled={loading}
                             className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white py-3 rounded-xl font-semibold text-sm transition shadow-sm disabled:opacity-60 mt-2">
