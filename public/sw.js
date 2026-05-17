@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noteapp-v2';
+const CACHE_NAME = 'noteapp-v3';
 const STATIC_ASSETS = [
     '/',
     '/offline.html',
