@@ -170,13 +170,19 @@ export default function Home() {
                 }
                 return;
             }
+            // ── FIX: không gọi fetchNotes() để tránh re-render làm mất focus input ──
             if (editNote) {
                 await axios.put(`/api/notes/${editNote.id}`, form);
+                setNotes(prev => prev.map(n =>
+                    n.id === editNote.id
+                        ? { ...n, ...form, updated_at: new Date().toISOString() }
+                        : n
+                ));
             } else {
                 const res = await axios.post('/api/notes', form);
                 setEditNote(res.data);
+                setNotes(prev => [res.data, ...prev]);
             }
-            fetchNotes();
         } catch (err) { console.error(err); }
         finally { setSaving(false); }
     };
@@ -206,8 +212,10 @@ export default function Home() {
         setShowForm(true);
     };
 
+    // ── FIX: gọi fetchNotes() khi đóng form để sync dữ liệu mới nhất từ server ──
     const closeForm = () => {
         setShowForm(false); setEditNote(null); setForm({ title: '', content: '' }); setNoteLabels([]);
+        fetchNotes();
     };
 
     const deleteNote = async (note, e) => {
